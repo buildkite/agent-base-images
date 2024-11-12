@@ -46,3 +46,5 @@ rm -rf /var/lib/apt/lists/*
 
 ln -s /usr/bin/tini /usr/sbin/tini
 BASH
+
+COPY ./docker-compose /usr/local/bin/docker-compose

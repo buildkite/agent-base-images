@@ -27,6 +27,9 @@ builder_name="$(docker buildx create --use)"
 # shellcheck disable=SC2064 # we want the current $builder_name to be trapped, not the runtime one
 trap "docker buildx rm ${builder_name} || true" EXIT
 
+echo --- Copying files into build context
+cp common/docker-compose "${packaging_dir}"
+
 echo "--- Building :docker: ${image_tag} base for all architectures"
 docker buildx build --progress plain --builder "${builder_name}" --platform linux/amd64,linux/arm64 "${packaging_dir}"
 

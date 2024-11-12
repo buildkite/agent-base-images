@@ -3,7 +3,7 @@
 set -Eeufo pipefail
 
 variant="${1:-}"
-image_tag="${2:-latest}"
+image_tag="${2:-}"
 push="${PUSH_IMAGE:-true}"
 
 if [[ ! "${variant}" =~ ^(alpine|alpine-k8s|ubuntu-20\.04|ubuntu-22\.04|ubuntu-24\.04)$ ]]; then
@@ -14,6 +14,9 @@ fi
 # Disable pushing if run manually
 if [[ -n "${image_tag}" ]]; then
     push="false"
+else
+    registry="445615400570.dkr.ecr.us-east-1.amazonaws.com/agent-base"
+    image_tag="${registry}:${variant}-build-${BUILDKITE_BUILD_NUMBER}"
 fi
 
 packaging_dir="${variant}"

@@ -1,0 +1,23 @@
+env:
+  DRY_RUN: false # set to true to disable publishing releases
+  AGENT_BUILDERS_QUEUE: "${AGENT_BUILDERS_QUEUE:-elastic-builders}"
+
+steps:
+  - name: ":docker: Build & publish {{matrix}} base image"
+    plugins:
+      - aws-assume-role-with-web-identity#v1.0.0:
+          role_arn: "arn:aws:iam::${BUILD_AWS_ACCOUNT_ID}:role/${BUILD_AWS_ROLE_NAME}"
+      - ecr#v2.9.0:
+          login: true
+          account_ids: "${BUILD_AWS_ACCOUNT_ID}"
+          region: "us-east-1"
+    agents:
+      queue: $AGENT_BUILDERS_QUEUE
+    command: ".buildkite/steps/build-docker-base-image.sh {{matrix}}"
+    matrix:
+      setup:
+        - "alpine"
+        - "alpine-k8s"
+        - "ubuntu-20.04"
+        - "ubuntu-22.04"
+        - "ubuntu-24.04"

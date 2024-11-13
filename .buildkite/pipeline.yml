@@ -9,7 +9,7 @@ steps:
           role_arn: "arn:aws:iam::${BUILD_AWS_ACCOUNT_ID}:role/${BUILD_AWS_ROLE_NAME}"
       - ecr#v2.9.0:
           login: true
-          account_ids: "https://public.ecr.aws"
+          account_ids: "public.ecr.aws"
     agents:
       queue: $AGENT_BUILDERS_QUEUE
     command: ".buildkite/steps/build-docker-base-image.sh {{matrix}}"

@@ -56,7 +56,6 @@ docker buildx build \
     --builder "${builder_name}" \
     --tag "${image_tag}" \
     --tag "${registry}:${variant}" \
-    --all-tags \
     --platform linux/amd64,linux/arm64 \
     --push \
     "${packaging_dir}"

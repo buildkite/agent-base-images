@@ -15,7 +15,7 @@ fi
 if [[ -n "${image_tag}" ]]; then
     push="false"
 else
-    registry="https://public.ecr.aws/buildkite/agent-base"
+    registry="public.ecr.aws/buildkite/agent-base"
     image_tag="${registry}:${variant}-build-${BUILDKITE_BUILD_NUMBER}"
 fi
 

@@ -43,14 +43,20 @@ if [[ "${push}" != "true" ]]; then
 fi
 
 echo --- :ecr: Pushing to ECR
+
 # Do another build with all architectures. The layers should be cached from the previous build
 # with all architectures.
 # Pushing to the docker registry in this way greatly simplifies creating the manifest list on
 # the docker registry so that either architecture can be pulled with the same tag.
+#
+# Also push the raw variant as a tag - that way Dependabot can be pointed at a
+# mutable tag for updates.
 docker buildx build \
     --progress plain \
     --builder "${builder_name}" \
     --tag "${image_tag}" \
+    --tag "${registry}:${variant}" \
+    --all-tags \
     --platform linux/amd64,linux/arm64 \
     --push \
     "${packaging_dir}"

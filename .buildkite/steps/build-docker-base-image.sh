@@ -44,7 +44,7 @@ fi
 
 echo --- :docker::ecr: Logging Docker into ECR
 
-aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin https://public.ecr.aws
 
 echo --- :ecr: Pushing to ECR
 # Do another build with all architectures. The layers should be cached from the previous build

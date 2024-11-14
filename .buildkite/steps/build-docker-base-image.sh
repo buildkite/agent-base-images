@@ -16,7 +16,7 @@ if [[ -n "${image_tag}" ]]; then
     push="false"
 else
     registry="public.ecr.aws/buildkite/agent-base"
-    image_tag="${registry}/${variant}:build-${BUILDKITE_BUILD_NUMBER}"
+    image_tag="${registry}:${variant}-build-${BUILDKITE_BUILD_NUMBER}"
 fi
 
 packaging_dir="${variant}"
@@ -49,12 +49,13 @@ echo --- :ecr: Pushing to ECR
 # Pushing to the docker registry in this way greatly simplifies creating the manifest list on
 # the docker registry so that either architecture can be pulled with the same tag.
 #
-# Also push a latest tag - that way Dependabot can be pointed at a mutable tag for updates.
+# Also push the raw variant as a tag - that way Dependabot can be pointed at a
+# mutable tag for updates.
 docker buildx build \
     --progress plain \
     --builder "${builder_name}" \
     --tag "${image_tag}" \
-    --tag "${registry}/${variant}:latest" \
+    --tag "${registry}:${variant}" \
     --platform linux/amd64,linux/arm64 \
     --push \
     "${packaging_dir}"

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.4
 
-FROM public.ecr.aws/ubuntu/ubuntu:20.04@sha256:4a885c102bc7de9ff2ffc4b11b65f35e46827d608069cd959181718aa7d14731
+FROM public.ecr.aws/ubuntu/ubuntu:22.04
 
 RUN <<BASH
 #!/usr/bin/env bash

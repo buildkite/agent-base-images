@@ -6,7 +6,7 @@ variant="${1:-}"
 image_tag="${2:-}"
 push="${PUSH_IMAGE:-true}"
 
-if [[ ! "${variant}" =~ ^(alpine|alpine-k8s|ubuntu-20\.04|ubuntu-22\.04|ubuntu-24\.04)$ ]]; then
+if [[ ! "${variant}" =~ ^(alpine|alpine-k8s|ubuntu-focal|ubuntu-jammy|ubuntu-noble)$ ]]; then
     echo "Unknown image variant ${variant}"
     exit 1
 fi

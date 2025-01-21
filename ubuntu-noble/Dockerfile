@@ -19,7 +19,7 @@ apt-get update
 # py3compile, which sometimes has an exception getting python3 to run
 # 'import sys; print(sys.implementation.cache_tag)'.
 # Seen at: https://www.kicksecure.com/wiki/Dev/todo#ISO_-_ARM64_build_failing
-# Weirdly, this isn't happening for the older Ubuntu LTSes, only Noble!
+# Older Ubuntu LTSes also occasionally flake, but it can manifest differently.
 #
 # It's a flake, so let's wrap `apt-get install` in a small retry.
 #

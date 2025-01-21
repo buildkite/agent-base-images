@@ -9,23 +9,36 @@ set -eufo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
 
-# Install main packages
 apt-get update
-apt-get install -y --no-install-recommends \
-  apt-transport-https \
-  bash \
-  ca-certificates \
-  curl \
-  git \
-  gnupg-agent \
-  jq \
-  openssh-client \
-  perl \
-  python3 \
-  python3-pip \
-  rsync \
-  software-properties-common \
-  tini
+
+# Install main packages
+#
+# There's a subtle flaky bug, somewhere in Linux or qemu, that happens when
+# running in an emulated arm64 environment. When installing various python3
+# dependencies (python3-six, python3-pip, etc), their maintainer scripts seem
+# to segfault. For some reason this more typically manifests as a python
+# exception on Ubuntu 24.04.
+#
+# It's a flake, so let's wrap `apt-get install` in a small retry.
+#
+install_main_pkgs() {
+    apt-get install -y --no-install-recommends \
+        apt-transport-https \
+        bash \
+        ca-certificates \
+        curl \
+        git \
+        gnupg-agent \
+        jq \
+        openssh-client \
+        perl \
+        python3 \
+        python3-pip \
+        rsync \
+        software-properties-common \
+        tini
+}
+(r=3; while ! install_main_pkgs; do ((--r)) || exit; done)
 
 # Install Docker Engine
 install -m 0755 -d /etc/apt/keyrings

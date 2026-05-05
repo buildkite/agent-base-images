@@ -38,6 +38,7 @@ RUN apk update && apk add --no-cache \
     jq \
     libc6-compat \
     openssh-client \
+    openssl \
     perl \
     py-pip \
     rsync \

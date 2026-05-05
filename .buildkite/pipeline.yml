@@ -24,3 +24,4 @@ steps:
         - "ubuntu-focal"
         - "ubuntu-jammy"
         - "ubuntu-noble"
+        - "ubuntu-resolute"

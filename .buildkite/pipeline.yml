@@ -17,11 +17,15 @@ steps:
     agents:
       queue: $AGENT_BUILDERS_QUEUE
     command: ".buildkite/steps/build-docker-base-image.sh {{matrix}}"
+    secrets:
+      - AGENT_BASE_IMAGES_DOCKER_HUB_TOKEN
     matrix:
       setup:
         - "alpine"
         - "alpine-k8s"
         - "ubuntu-focal"
         - "ubuntu-jammy"
+        - "ubuntu-jammy-hosted"
         - "ubuntu-noble"
+        - "ubuntu-noble-hosted"
         - "ubuntu-resolute"

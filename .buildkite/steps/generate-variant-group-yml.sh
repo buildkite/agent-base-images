@@ -25,7 +25,7 @@ anchor_1: &build-and-publish-variant
   agents:
     queue: "${AGENT_BUILDERS_QUEUE}"
   env:
-    PUSH_IMAGE: "${PUSH_IMAGE}"
+    PUSH_IMAGE: "${PUSH_IMAGE:-}"
   plugins:
     - aws-assume-role-with-web-identity#v1.4.0:
         role_arn: "arn:aws:iam::\${BUILD_AWS_ACCOUNT_ID}:role/\${BUILD_AWS_ROLE_NAME}"

@@ -37,9 +37,7 @@ trap "docker buildx rm ${builder_name} || true" EXIT
 echo "--- Copy files into build context"
 cp common/docker-compose "${packaging_dir}"
 
-push="${PUSH_IMAGE:-true}"
-
-if [[ "${push}" != "true" ]]; then
+if [[ "${PUSH_IMAGE:-}" != "true" ]]; then
     echo "--- :docker: Building ${variant}-${arch} (no push)"
     docker buildx build \
         --progress plain \

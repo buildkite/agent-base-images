@@ -1,5 +1,6 @@
 env:
   AGENT_BUILDERS_QUEUE: "${AGENT_BUILDERS_QUEUE:-elastic-builders}"
+  PUSH_IMAGE: "false"
 
 anchor_1: &generate-variant-group
   agents:
@@ -20,9 +21,9 @@ steps:
   - branches: "main"
     <<: *generate-variant-group
     label: ":pipeline: Upload {{matrix}} group (main)"
+    env:
+      PUSH_IMAGE: "true"
 
   - branches: "!main"
     <<: *generate-variant-group
     label: ":pipeline: Upload {{variant}} group (branch)"
-    env:
-      PUSH_IMAGE: "false"

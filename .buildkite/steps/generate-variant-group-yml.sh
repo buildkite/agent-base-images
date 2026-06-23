@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+# Usage:
+# generate-variant-group-yml.sh <variant> | buildkite-agent pipeline upload
+# e.g. generate-variant-group-yml.sh alpine-k8s | buildkite-agent pipeline upload
+#
+# Generates the dynamic pipeline YAML Group Step for a variant and outputs to STDOUT.
+# It runs `build-docker-base-image.sh` per <arch>.
+# When PUSH_IMAGE=true, the images are pushed and `publish-multiarch-manifest.sh`
+# publishes a multiarch variant of the image to Docker Hub and ECR.
+
 set -Eeufo pipefail
 
 variant="${1:?variant required}"

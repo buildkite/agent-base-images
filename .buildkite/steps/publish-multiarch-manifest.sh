@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# Usage:
+# publish-multiarch-manifest.sh <variant>
+# e.g. publish-multiarch-manifest.sh alpine-k8s
+#
+# Publishes a multiarch manifest list for a variant to Docker Hub and ECR by
+# combining the per-arch image digests stored in Buildkite meta-data.
+
 set -Eeufo pipefail
 
 variant="${1:?variant required}"

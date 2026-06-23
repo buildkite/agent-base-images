@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+#
+# Usage:
+# build-docker-base-image.sh <variant> <arch>
+# e.g. build-docker-base-image.sh alpine-k8s arm64
+#
+# Builds the base image for a given variant and arch.
+# When PUSH_IMAGE=true, it pushes the image to Docker Hub and ECR
+# and records the image digest in Buildkite meta-data.
 
 set -Eeufo pipefail
 

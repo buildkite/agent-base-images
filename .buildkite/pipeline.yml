@@ -1,20 +1,11 @@
 env:
   AGENT_BUILDERS_QUEUE: "${AGENT_BUILDERS_QUEUE:-elastic-builders}"
+  PUSH_IMAGE: "false"
 
-common: &build-base-image
-  plugins:
-    - aws-assume-role-with-web-identity#v1.4.0:
-        role_arn: "arn:aws:iam::${BUILD_AWS_ACCOUNT_ID}:role/${BUILD_AWS_ROLE_NAME}"
-        session-tags:
-          - organization_slug
-          - organization_id
-          - pipeline_slug
-    - ecr#v2.9.0:
-        login: true
-        account_ids: "public.ecr.aws"
+anchor_1: &generate-variant-group
   agents:
     queue: $AGENT_BUILDERS_QUEUE
-  command: ".buildkite/steps/build-docker-base-image.sh {{matrix}}"
+  command: ".buildkite/steps/generate-variant-group-yml.sh '{{matrix}}' | buildkite-agent pipeline upload"
   matrix:
     setup:
       - "alpine"
@@ -28,13 +19,11 @@ common: &build-base-image
 
 steps:
   - branches: "main"
-    name: ":docker: Build {{matrix}} base image (main)"
-    secrets:
-      - AGENT_BASE_IMAGES_DOCKER_HUB_TOKEN
-    <<: *build-base-image
+    <<: *generate-variant-group
+    label: ":pipeline: Upload {{matrix}} group (main)"
+    env:
+      PUSH_IMAGE: "true"
 
   - branches: "!main"
-    name: ":docker: Build {{matrix}} base image"
-    env:
-      PUSH_IMAGE: false
-    <<: *build-base-image
+    <<: *generate-variant-group
+    label: ":pipeline: Upload {{variant}} group (branch)"

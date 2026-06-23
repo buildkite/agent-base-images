@@ -10,14 +10,14 @@
 
 set -Eeufo pipefail
 
-variant="${1:-}"
+# shellcheck source=.buildkite/steps/lib/common.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
+
+variant="${1:?variant required}"
 arch="${2:-}"
 
 # Validate variant
-if [[ ! "${variant}" =~ ^(alpine|alpine-k8s|ubuntu-(focal|jammy|jammy-hosted|noble|noble-hosted|resolute))$ ]]; then
-    echo "Unknown image variant '${variant}'"
-    exit 1
-fi
+validate_variant "${variant}"
 
 # Validate arch
 if [[ ! "${arch}" =~ ^(amd64|arm64)$ ]]; then

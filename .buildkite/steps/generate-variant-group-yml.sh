@@ -11,13 +11,13 @@
 
 set -Eeufo pipefail
 
+# shellcheck source=.buildkite/steps/lib/common.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
+
 variant="${1:?variant required}"
 
-# Validate variant — same regex as build-docker-base-image.sh
-if [[ ! "${variant}" =~ ^(alpine|alpine-k8s|ubuntu-(focal|jammy|jammy-hosted|noble|noble-hosted|resolute))$ ]]; then
-    echo "Unknown image variant '${variant}'" >&2
-    exit 1
-fi
+# Validate variant
+validate_variant "${variant}"
 
 # Reusable anchor
 cat <<EOF

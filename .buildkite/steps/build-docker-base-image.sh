@@ -6,7 +6,7 @@ variant="${1:-}"
 image_tag="${2:-}"
 push="${PUSH_IMAGE:-true}"
 
-if [[ ! "${variant}" =~ ^(alpine|alpine-k8s|ubuntu-(focal|jammy|noble|resolute))$ ]]; then
+if [[ ! "${variant}" =~ ^(alpine|alpine-k8s|ubuntu-(focal|jammy|jammy-hosted|noble|noble-hosted|resolute))$ ]]; then
     echo "Unknown image variant ${variant}"
     exit 1
 fi
@@ -17,6 +17,9 @@ if [[ -n "${image_tag}" ]]; then
 else
     registry="public.ecr.aws/buildkite/agent-base"
     image_tag="${registry}:${variant}-build-${BUILDKITE_BUILD_NUMBER}"
+
+    dockerhub_registry="docker.io/buildkite/agent-base"
+    dockerhub_image_tag="${dockerhub_registry}:${variant}-build-${BUILDKITE_BUILD_NUMBER}"
 fi
 
 packaging_dir="${variant}"
@@ -56,6 +59,19 @@ docker buildx build \
     --builder "${builder_name}" \
     --tag "${image_tag}" \
     --tag "${registry}:${variant}" \
+    --platform linux/amd64,linux/arm64 \
+    --push \
+    "${packaging_dir}"
+
+echo --- :ecr: Pushing to Docker Hub
+
+echo "${AGENT_BASE_IMAGES_DOCKER_HUB_TOKEN}" | docker login --username=buildkite --password-stdin
+
+docker buildx build \
+    --progress plain \
+    --builder "${builder_name}" \
+    --tag "${dockerhub_image_tag}" \
+    --tag "${dockerhub_registry}:${variant}" \
     --platform linux/amd64,linux/arm64 \
     --push \
     "${packaging_dir}"

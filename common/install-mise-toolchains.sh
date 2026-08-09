@@ -3,7 +3,7 @@
 set -eufo pipefail
 
 : "${MISE_VERSION:?}"
-: "${NODE_20_VERSION:?}"
+: "${NODE_22_VERSION:?}"
 : "${NODE_24_VERSION:?}"
 
 export DEBIAN_ARCH="$(dpkg --print-architecture)"
@@ -110,7 +110,7 @@ url = "${RUBY_ARM64_URL}"
 checksum = "${RUBY_ARM64_SHA256}"
 TOML
 
-canonical_mise install "node@${NODE_20_VERSION}"
+canonical_mise install "node@${NODE_22_VERSION}"
 canonical_mise install "node@${NODE_24_VERSION}"
 canonical_mise install "go@${GO_124_VERSION}"
 canonical_mise install "go@${GO_125_VERSION}"
@@ -158,7 +158,7 @@ register_tool() {
   test "$(readlink -f "${toolcache_root}")" = "${canonical_root}"
 }
 
-register_tool node node "${NODE_20_VERSION}" bin/node
+register_tool node node "${NODE_22_VERSION}" bin/node
 register_tool node node "${NODE_24_VERSION}" bin/node
 register_tool go go "${GO_124_VERSION}" bin/go
 register_tool go go "${GO_125_VERSION}" bin/go
@@ -167,13 +167,17 @@ register_tool ruby Ruby "${RUBY_VERSION}" bin/ruby
 
 test ! -e /mise/bin/mise
 
-for version in "${NODE_20_VERSION}" "${NODE_24_VERSION}"; do
+for version in "${NODE_22_VERSION}" "${NODE_24_VERSION}"; do
   canonical_root="${TOOLCHAIN_DATA_DIR}/installs/node/${version}"
   test "$(readlink -f "$(mise where "node@${version}")")" = "${canonical_root}"
   test "$(mise exec "node@${version}" -- node --version)" = "v${version}"
   EXPECTED_NODE_VERSION="${version}" mise exec "node@${version}" -- node -e \
     'if (process.versions.node !== process.env.EXPECTED_NODE_VERSION) process.exit(1)'
 done
+
+export NODE_24_ROOT="${TOOLCHAIN_DATA_DIR}/installs/node/${NODE_24_VERSION}"
+test "$(readlink -f "$(command -v node)")" = "${NODE_24_ROOT}/bin/node"
+test "$(node --version)" = "v${NODE_24_VERSION}"
 
 cat >/tmp/mise-go-smoke.go <<'GO'
 package main
@@ -227,7 +231,7 @@ jq -n \
   --arg mise_version "${MISE_VERSION#v}" \
   --arg mise_sha256 "$(sha256sum /usr/local/bin/mise | awk '{print $1}')" \
   --arg root "${TOOLCHAIN_DATA_DIR}" \
-  --arg node20 "${NODE_20_VERSION}" \
+  --arg node22 "${NODE_22_VERSION}" \
   --arg node24 "${NODE_24_VERSION}" \
   --arg go124 "${GO_124_VERSION}" \
   --arg go125 "${GO_125_VERSION}" \
@@ -251,7 +255,7 @@ jq -n \
       executable_sha256: $mise_sha256
     },
     toolchains: [
-      tool("node"; $node20; "bin/node"),
+      tool("node"; $node22; "bin/node"),
       tool("node"; $node24; "bin/node"),
       tool("go"; $go124; "bin/go"),
       tool("go"; $go125; "bin/go"),
@@ -261,7 +265,7 @@ jq -n \
   }' \
   < <(
     sha256sum \
-      "${TOOLCHAIN_DATA_DIR}/installs/node/${NODE_20_VERSION}/bin/node" \
+      "${TOOLCHAIN_DATA_DIR}/installs/node/${NODE_22_VERSION}/bin/node" \
       "${TOOLCHAIN_DATA_DIR}/installs/node/${NODE_24_VERSION}/bin/node" \
       "${TOOLCHAIN_DATA_DIR}/installs/go/${GO_124_VERSION}/bin/go" \
       "${TOOLCHAIN_DATA_DIR}/installs/go/${GO_125_VERSION}/bin/go" \
@@ -295,7 +299,7 @@ mark_complete() {
   test ! -s "${marker}"
 }
 
-mark_complete node "${NODE_20_VERSION}"
+mark_complete node "${NODE_22_VERSION}"
 mark_complete node "${NODE_24_VERSION}"
 mark_complete go "${GO_124_VERSION}"
 mark_complete go "${GO_125_VERSION}"

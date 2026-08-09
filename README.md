@@ -54,21 +54,24 @@ remain the smaller default images.
 
 The preloaded toolchain contains:
 
-- Node.js 20.20.2 and 24.18.0
+- Node.js 22.23.2 and 24.18.0
 - the latest patch release from each supported Go 1.24, 1.25, and 1.26 line
 - the latest stable Ruby for which mise has a precompiled binary
 
-The Go and Ruby versions are resolved to exact versions during each image
-build. Each toolchain image records those versions, its architecture, the
-pinned mise version, canonical install roots, and executable SHA-256 digests in
+The Node versions are exact pins derived from the same release source used by
+the GitHub runner-image toolsets. The Go and Ruby versions are resolved to
+exact versions during each image build. Each toolchain image records those
+versions, its architecture, the pinned mise version, canonical install roots,
+and executable SHA-256 digests in
 `/opt/buildkite/mise-toolchains/manifest.json`.
 
 Toolchain bytes live only under `/opt/buildkite/mise-toolchains/installs`.
 Native mise discovers the same installs through links under `/mise/installs`.
-The matching `/opt/hostedtoolcache` entries provide the case-sensitive
-Actions tool-cache layout (`node`, `go`, and `Ruby`) without copying the SDKs.
-This compatibility layout is not a claim of full GitHub-hosted Ubuntu image
-parity.
+Node 24 at that canonical root is the default `node` on `PATH`. The matching
+`/opt/hostedtoolcache` entries provide the case-sensitive setup-action tool
+cache layout (`node`, `go`, and `Ruby`) without copying the SDKs. This cache is
+not the runner-bundled Node runtime used to execute JavaScript actions. The
+compatibility layout is not a claim of full GitHub-hosted Ubuntu image parity.
 
 The toolchain images keep mise itself at `/usr/local/bin/mise`; they do not
 install `/mise/bin/mise`, so `jdx/mise-action` remains free to install its

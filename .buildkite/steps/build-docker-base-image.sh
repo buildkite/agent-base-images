@@ -27,6 +27,22 @@ fi
 
 platform="linux/${arch}"
 packaging_dir="${variant}"
+build_context="${packaging_dir}"
+build_args=()
+
+case "${variant}" in
+    ubuntu-jammy-hosted-toolchains|ubuntu-noble-hosted-toolchains)
+        packaging_dir="${variant%-toolchains}"
+        build_context="."
+        build_args=(--file "${packaging_dir}/Dockerfile" --target toolchains)
+        ;;
+    ubuntu-jammy-hosted|ubuntu-noble-hosted)
+        # These Dockerfiles share the toolchain installer from the repository
+        # root, even though their default target remains the slim Hosted image.
+        build_context="."
+        build_args=(--file "${packaging_dir}/Dockerfile")
+        ;;
+esac
 
 echo "--- Build :docker: base image for ${variant} on ${platform}"
 
@@ -34,8 +50,10 @@ builder_name="$(docker buildx create --use)"
 # shellcheck disable=SC2064 # we want the current $builder_name to be trapped, not the runtime one
 trap "docker buildx rm ${builder_name} || true" EXIT
 
-echo "--- Copy files into build context"
-cp common/docker-compose "${packaging_dir}"
+if [[ "${build_context}" != "." ]]; then
+    echo "--- Copy files into build context"
+    cp common/docker-compose "${packaging_dir}"
+fi
 
 if [[ "${PUSH_IMAGE:-}" != "true" ]]; then
     echo "--- :docker: Building ${variant}-${arch} (no push)"
@@ -43,7 +61,8 @@ if [[ "${PUSH_IMAGE:-}" != "true" ]]; then
         --progress plain \
         --builder "${builder_name}" \
         --platform "${platform}" \
-        "${packaging_dir}"
+        "${build_args[@]}" \
+        "${build_context}"
     exit 0
 fi
 
@@ -64,7 +83,8 @@ docker buildx build \
     --platform "${platform}" \
     --metadata-file "${metadata_file}" \
     --output "type=image,\"name=${dockerhub_registry},${ecr_registry}\",push-by-digest=true,name-canonical=true,push=true" \
-    "${packaging_dir}"
+    "${build_args[@]}" \
+    "${build_context}"
 
 digest="$(jq -r '."containerimage.digest"' "${metadata_file}")"
 

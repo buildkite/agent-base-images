@@ -13,8 +13,10 @@ anchor_1: &generate-variant-group
       - "ubuntu-focal"
       - "ubuntu-jammy"
       - "ubuntu-jammy-hosted"
+      - "ubuntu-jammy-hosted-toolchains"
       - "ubuntu-noble"
       - "ubuntu-noble-hosted"
+      - "ubuntu-noble-hosted-toolchains"
       - "ubuntu-resolute"
 
 steps:

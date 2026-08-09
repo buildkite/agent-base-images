@@ -41,19 +41,26 @@ and other common system tools.
 | Tag | Description |
 | - | - |
 | [ubuntu-jammy-hosted](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-jammy-hosted) | Ubuntu 22.04 LTS base for Hosted Agents |
+| [ubuntu-jammy-hosted-toolchains](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-jammy-hosted-toolchains) | Ubuntu 22.04 LTS Hosted base with preloaded mise toolchains |
 | [ubuntu-noble-hosted](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-noble-hosted) | Ubuntu 24.04 LTS base for Hosted Agents |
+| [ubuntu-noble-hosted-toolchains](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-noble-hosted-toolchains) | Ubuntu 24.04 LTS Hosted base with preloaded mise toolchains |
 
 ### Preloaded Hosted toolchains
 
-The Linux Hosted variants preload a small common toolchain using mise:
+The opt-in `ubuntu-jammy-hosted-toolchains` and
+`ubuntu-noble-hosted-toolchains` variants preload a common toolchain using
+mise. The corresponding Hosted variants without the `-toolchains` suffix
+remain the smaller default images.
+
+The preloaded toolchain contains:
 
 - Node.js 20.20.2 and 24.18.0
 - the latest patch release from each supported Go 1.24, 1.25, and 1.26 line
 - the latest stable Ruby for which mise has a precompiled binary
 
 The Go and Ruby versions are resolved to exact versions during each image
-build. The image records those versions, its architecture, the pinned mise
-version, canonical install roots, and executable SHA-256 digests in
+build. Each toolchain image records those versions, its architecture, the
+pinned mise version, canonical install roots, and executable SHA-256 digests in
 `/opt/buildkite/mise-toolchains/manifest.json`.
 
 Toolchain bytes live only under `/opt/buildkite/mise-toolchains/installs`.
@@ -63,11 +70,12 @@ Actions tool-cache layout (`node`, `go`, and `Ruby`) without copying the SDKs.
 This compatibility layout is not a claim of full GitHub-hosted Ubuntu image
 parity.
 
-The image keeps mise itself at `/usr/local/bin/mise`; it does not install
-`/mise/bin/mise`, so `jdx/mise-action` remains free to install its requested
-mise version. Reusing the preloaded toolchains from `jdx/mise-action` still
-requires the workload runtime to preserve `MISE_DATA_DIR=/mise`. These images
-provide the seed and filesystem layout but do not configure `buildkite-gha`.
+The toolchain images keep mise itself at `/usr/local/bin/mise`; they do not
+install `/mise/bin/mise`, so `jdx/mise-action` remains free to install its
+requested mise version. Reusing the preloaded toolchains from
+`jdx/mise-action` still requires the workload runtime to preserve
+`MISE_DATA_DIR=/mise`. These images provide the seed and filesystem layout but
+do not configure `buildkite-gha`.
 
 ### Why Ubuntu codenames?
 

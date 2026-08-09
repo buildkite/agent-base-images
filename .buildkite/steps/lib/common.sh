@@ -5,7 +5,7 @@
 # This file must produce NO output when sourced, because some
 # callers pipe their STDOUT to `buildkite-agent pipeline upload`.
 
-VARIANT_REGEX='^(alpine|alpine-k8s|ubuntu-(focal|jammy|jammy-hosted|noble|noble-hosted|resolute))$'
+VARIANT_REGEX='^(alpine|alpine-k8s|ubuntu-(focal|jammy|jammy-hosted|jammy-hosted-toolchains|noble|noble-hosted|noble-hosted-toolchains|resolute))$'
 
 # validate_variant <variant>
 # Returns 0 if the variant is valid, otherwise prints an error to stderr and

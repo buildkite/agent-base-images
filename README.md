@@ -43,6 +43,32 @@ and other common system tools.
 | [ubuntu-jammy-hosted](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-jammy-hosted) | Ubuntu 22.04 LTS base for Hosted Agents |
 | [ubuntu-noble-hosted](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-noble-hosted) | Ubuntu 24.04 LTS base for Hosted Agents |
 
+### Preloaded Hosted toolchains
+
+The Linux Hosted variants preload a small common toolchain using mise:
+
+- Node.js 20.20.2 and 24.18.0
+- the latest patch release from each supported Go 1.24, 1.25, and 1.26 line
+- the latest stable Ruby for which mise has a precompiled binary
+
+The Go and Ruby versions are resolved to exact versions during each image
+build. The image records those versions, its architecture, the pinned mise
+version, canonical install roots, and executable SHA-256 digests in
+`/opt/buildkite/mise-toolchains/manifest.json`.
+
+Toolchain bytes live only under `/opt/buildkite/mise-toolchains/installs`.
+Native mise discovers the same installs through links under `/mise/installs`.
+The matching `/opt/hostedtoolcache` entries provide the case-sensitive
+Actions tool-cache layout (`node`, `go`, and `Ruby`) without copying the SDKs.
+This compatibility layout is not a claim of full GitHub-hosted Ubuntu image
+parity.
+
+The image keeps mise itself at `/usr/local/bin/mise`; it does not install
+`/mise/bin/mise`, so `jdx/mise-action` remains free to install its requested
+mise version. Reusing the preloaded toolchains from `jdx/mise-action` still
+requires the workload runtime to preserve `MISE_DATA_DIR=/mise`. These images
+provide the seed and filesystem layout but do not configure `buildkite-gha`.
+
 ### Why Ubuntu codenames?
 
 This makes Dependabot slightly easier to work with. When tagged with version

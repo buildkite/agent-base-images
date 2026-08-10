@@ -5,6 +5,7 @@ set -Eeufo pipefail
 : "${MISE_VERSION:?}"
 : "${NODE_22_VERSION:?}"
 : "${NODE_24_VERSION:?}"
+: "${YARN_VERSION:?}"
 
 export DEBIAN_ARCH="$(dpkg --print-architecture)"
 export TOOLCACHE_ARCH=x64
@@ -122,6 +123,16 @@ canonical_mise trust /tmp/mise-ruby-project/mise.toml
   canonical_mise install --locked
 )
 
+# Node distributes Corepack with both pinned Node lines. Enable its Yarn shims
+# in each install and preload an exact default release into the shared image
+# cache so yarn works without a runtime bootstrap download.
+for version in "${NODE_22_VERSION}" "${NODE_24_VERSION}"; do
+  node_root="${TOOLCHAIN_DATA_DIR}/installs/node/${version}"
+  PATH="${node_root}/bin:${PATH}" corepack enable yarn --install-directory "${node_root}/bin"
+done
+PATH="${TOOLCHAIN_DATA_DIR}/installs/node/${NODE_24_VERSION}/bin:${PATH}" \
+  corepack install --global "yarn@${YARN_VERSION}"
+
 export RUBY_ARCHIVE="${TOOLCHAIN_DATA_DIR}/downloads/ruby/${RUBY_VERSION}/${RUBY_X64_ASSET}"
 export RUBY_ARCHIVE_SHA256="${RUBY_X64_SHA256#sha256:}"
 if [ "${DEBIAN_ARCH}" = "arm64" ]; then
@@ -169,10 +180,15 @@ test ! -e /mise/bin/mise
 
 for version in "${NODE_22_VERSION}" "${NODE_24_VERSION}"; do
   canonical_root="${TOOLCHAIN_DATA_DIR}/installs/node/${version}"
+  toolcache_root="/opt/hostedtoolcache/node/${version}/${TOOLCACHE_ARCH}"
   test "$(readlink -f "$(mise where "node@${version}")")" = "${canonical_root}"
   test "$(mise exec "node@${version}" -- node --version)" = "v${version}"
   EXPECTED_NODE_VERSION="${version}" mise exec "node@${version}" -- node -e \
     'if (process.versions.node !== process.env.EXPECTED_NODE_VERSION) process.exit(1)'
+  test -L "${canonical_root}/bin/yarn"
+  test -f "$(readlink -f "${canonical_root}/bin/yarn")"
+  test "$(PATH="${toolcache_root}/bin:${PATH}" node --version)" = "v${version}"
+  test "$(COREPACK_ENABLE_NETWORK=0 PATH="${toolcache_root}/bin:${PATH}" yarn --version)" = "${YARN_VERSION}"
 done
 
 export NODE_24_ROOT="${TOOLCHAIN_DATA_DIR}/installs/node/${NODE_24_VERSION}"

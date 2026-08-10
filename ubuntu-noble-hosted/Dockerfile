@@ -20,7 +20,7 @@ ENV MISE_DATA_DIR="/mise"
 ENV MISE_CONFIG_DIR="/mise"
 ENV MISE_CACHE_DIR="/mise/cache"
 ENV MISE_INSTALL_PATH="/usr/local/bin/mise"
-ENV PATH="/opt/buildkite/mise-toolchains/installs/node/${NODE_24_VERSION}/bin:/mise/shims:$PATH"
+ENV PATH="/mise/shims:/opt/buildkite/mise-toolchains/installs/node/${NODE_24_VERSION}/bin:$PATH"
 
 ARG TARGETARCH
 

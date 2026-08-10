@@ -176,8 +176,9 @@ for version in "${NODE_22_VERSION}" "${NODE_24_VERSION}"; do
 done
 
 export NODE_24_ROOT="${TOOLCHAIN_DATA_DIR}/installs/node/${NODE_24_VERSION}"
-test "$(readlink -f "$(command -v node)")" = "${NODE_24_ROOT}/bin/node"
-test "$(node --version)" = "v${NODE_24_VERSION}"
+test -f "${NODE_24_ROOT}/bin/node"
+test ! -L "${NODE_24_ROOT}/bin/node"
+test "$("${NODE_24_ROOT}/bin/node" --version)" = "v${NODE_24_VERSION}"
 
 cat >/tmp/mise-go-smoke.go <<'GO'
 package main

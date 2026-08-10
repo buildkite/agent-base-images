@@ -27,6 +27,7 @@ ARG TARGETARCH
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-cache-${TARGETARCH},sharing=locked \
 --mount=type=cache,target=/var/lib/apt,id=apt-lib-${TARGETARCH},sharing=locked \
 --mount=type=cache,target=/var/cache/debconf,id=debconf-${TARGETARCH},sharing=locked \
+--mount=type=bind,source=common/install-mise-default-node.sh,target=/install-mise-default-node.sh \
 <<BASH
 #!/usr/bin/env bash
 
@@ -80,30 +81,7 @@ curl -fLo /tmp/bk.deb https://github.com/buildkite/cli/releases/download/v${BK_C
 dpkg -i /tmp/bk.deb
 rm -f /tmp/bk.deb
 
-# install pinned mise binary
-export MISE_ARCH=x64
-export MISE_SHA256=${MISE_SHA256_AMD64}
-if [ "${DEBIAN_ARCH}" = "arm64" ]; then
-  MISE_ARCH=arm64
-  MISE_SHA256=${MISE_SHA256_ARM64}
-fi
-curl -fLo /usr/local/bin/mise https://github.com/jdx/mise/releases/download/${MISE_VERSION}/mise-${MISE_VERSION}-linux-${MISE_ARCH}
-echo "${MISE_SHA256}  /usr/local/bin/mise" | sha256sum --check
-chmod 0755 /usr/local/bin/mise
-test "$(mise --version | awk '{print $1}')" = "${MISE_VERSION#v}"
-
-# Install the image's default Node at its permanent mise-owned root. The
-# toolchains target registers this same directory with mise and setup-node.
-export NODE_24_ROOT="/opt/buildkite/mise-toolchains/installs/node/${NODE_24_VERSION}"
-MISE_DATA_DIR=/opt/buildkite/mise-toolchains \
-  MISE_CONFIG_DIR=/tmp/mise-config \
-  MISE_CACHE_DIR=/tmp/mise-cache \
-  mise install "node@${NODE_24_VERSION}"
-test -d "${NODE_24_ROOT}"
-test ! -L "${NODE_24_ROOT}"
-test "$(readlink -f "$(command -v node)")" = "${NODE_24_ROOT}/bin/node"
-test "$(node --version)" = "v${NODE_24_VERSION}"
-rm -rf /tmp/mise-cache /tmp/mise-config
+bash /install-mise-default-node.sh
 
 # install aws-cli
 curl https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip -o /tmp/awscliv2.zip

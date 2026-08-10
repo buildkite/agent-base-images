@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eufo pipefail
+set -Eeufo pipefail
 
 : "${MISE_VERSION:?}"
 : "${NODE_22_VERSION:?}"

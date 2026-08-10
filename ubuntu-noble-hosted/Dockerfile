@@ -1,9 +1,17 @@
 # syntax=docker/dockerfile:1.4
 
+ARG MISE_VERSION=v2026.8.3
+ARG NODE_22_VERSION=22.23.2
+ARG NODE_24_VERSION=24.18.0
+
 FROM public.ecr.aws/ubuntu/ubuntu:24.04 AS base
 
 ARG BAZELISK_VERSION=v1.29.0
 ARG BK_CLI_VERSION=3.40.0
+ARG MISE_VERSION
+ARG NODE_24_VERSION
+ARG MISE_SHA256_AMD64=66585ac496c10bf6fbf13272e3e550c1813aed0e1cb780b9bb73c1751de49289
+ARG MISE_SHA256_ARM64=a5bdab52367ecca6c253b60f74d85f8cefe51f613e3b7fcec7b7a5f1dc1bbb41
 
 ENV LC_CTYPE="C.UTF-8"
 
@@ -12,13 +20,14 @@ ENV MISE_DATA_DIR="/mise"
 ENV MISE_CONFIG_DIR="/mise"
 ENV MISE_CACHE_DIR="/mise/cache"
 ENV MISE_INSTALL_PATH="/usr/local/bin/mise"
-ENV PATH="/mise/shims:$PATH"
+ENV PATH="/mise/shims:/opt/buildkite/mise-toolchains/installs/node/${NODE_24_VERSION}/bin:$PATH"
 
 ARG TARGETARCH
 
 RUN --mount=type=cache,target=/var/cache/apt,id=apt-cache-${TARGETARCH},sharing=locked \
 --mount=type=cache,target=/var/lib/apt,id=apt-lib-${TARGETARCH},sharing=locked \
 --mount=type=cache,target=/var/cache/debconf,id=debconf-${TARGETARCH},sharing=locked \
+--mount=type=bind,source=common/install-mise-default-node.sh,target=/install-mise-default-node.sh \
 <<BASH
 #!/usr/bin/env bash
 
@@ -72,8 +81,7 @@ curl -fLo /tmp/bk.deb https://github.com/buildkite/cli/releases/download/v${BK_C
 dpkg -i /tmp/bk.deb
 rm -f /tmp/bk.deb
 
-# install mise
-curl -fsL https://mise.run | bash
+bash /install-mise-default-node.sh
 
 # install aws-cli
 curl https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip -o /tmp/awscliv2.zip
@@ -91,14 +99,7 @@ apt-get update
 apt-get install -y google-cloud-cli=502.0.0-0
 gcloud --version
 
-# install nodejs
-git clone https://github.com/tj/n /usr/src/n
-pushd /usr/src/n
-make install
-popd
-n lts
-rm -rf /usr/src/n /tmp/*
-node --version
+rm -rf /tmp/*
 
 ln -s /usr/bin/tini /usr/sbin/tini
 
@@ -108,8 +109,21 @@ apt clean all
 rm -rf /var/lib/apt/lists/*
 BASH
 
+FROM base AS toolchains
 
-FROM base
+ARG MISE_VERSION
+ARG NODE_22_VERSION
+ARG NODE_24_VERSION
+
+RUN --mount=type=bind,source=common/install-mise-toolchains.sh,target=/tmp/install-mise-toolchains.sh \
+  bash /tmp/install-mise-toolchains.sh
+
+WORKDIR /root
+USER root
+
+# Keep the normal Hosted tag slim; the opt-in variant explicitly builds the
+# toolchains target above.
+FROM base AS hosted
 
 WORKDIR /root
 USER root

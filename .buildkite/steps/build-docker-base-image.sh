@@ -28,14 +28,37 @@ fi
 platform="linux/${arch}"
 packaging_dir="${variant}"
 
+# `-toolchains` variants are virtual, so rewrite packaging_dir to their real parents
+if [[ "${variant}" == *-toolchains ]]; then
+    packaging_dir="${variant%-toolchains}" # e.g. ubuntu-jammy-hosted-toolchains → ubuntu-jammy-hosted
+fi
+
+build_context="${packaging_dir}"
+build_args=()
+
+# - Rewrite `build_context` here because these images need access to common/install-mise-toolchains.sh
+# - Rewrite `build_args` here to adapt to new `build_context` and to specify custom --target for `toolchains`
+case "${variant}" in
+    ubuntu-jammy-hosted|ubuntu-noble-hosted)
+        build_context="."
+        build_args=(--file "${packaging_dir}/Dockerfile")
+        ;;
+    ubuntu-jammy-hosted-toolchains|ubuntu-noble-hosted-toolchains)
+        build_context="."
+        build_args=(--file "${packaging_dir}/Dockerfile" --target toolchains)
+        ;;
+esac
+
 echo "--- Build :docker: base image for ${variant} on ${platform}"
 
 builder_name="$(docker buildx create --use)"
 # shellcheck disable=SC2064 # we want the current $builder_name to be trapped, not the runtime one
 trap "docker buildx rm ${builder_name} || true" EXIT
 
-echo "--- Copy files into build context"
-cp common/docker-compose "${packaging_dir}"
+if [[ "${build_context}" != "." ]]; then
+    echo "--- Copy files into build context"
+    cp common/docker-compose "${packaging_dir}"
+fi
 
 if [[ "${PUSH_IMAGE:-}" != "true" ]]; then
     echo "--- :docker: Building ${variant}-${arch} (no push)"
@@ -43,7 +66,8 @@ if [[ "${PUSH_IMAGE:-}" != "true" ]]; then
         --progress plain \
         --builder "${builder_name}" \
         --platform "${platform}" \
-        "${packaging_dir}"
+        "${build_args[@]}" \
+        "${build_context}"
     exit 0
 fi
 
@@ -64,7 +88,8 @@ docker buildx build \
     --platform "${platform}" \
     --metadata-file "${metadata_file}" \
     --output "type=image,\"name=${dockerhub_registry},${ecr_registry}\",push-by-digest=true,name-canonical=true,push=true" \
-    "${packaging_dir}"
+    "${build_args[@]}" \
+    "${build_context}"
 
 digest="$(jq -r '."containerimage.digest"' "${metadata_file}")"
 

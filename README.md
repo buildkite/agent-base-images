@@ -43,6 +43,35 @@ and other common system tools.
 | [ubuntu-jammy-hosted](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-jammy-hosted) | Ubuntu 22.04 LTS base for Hosted Agents |
 | [ubuntu-noble-hosted](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-noble-hosted) | Ubuntu 24.04 LTS base for Hosted Agents |
 
+## Hosted Toolchains Variants
+
+Hosted toolchain variants preloaded with mise:
+
+- two Node.js LTS lines (22 and 24), pinned via the `NODE_22_VERSION` and
+  `NODE_24_VERSION` build args in the `-hosted` Dockerfiles
+- the latest patch release from each supported Go 1.24, 1.25, and 1.26 line
+- the latest stable Ruby for which mise has a precompiled binary
+
+The exact Node versions are the source of truth in the `-hosted` Dockerfiles and
+track the GitHub runner-image toolsets; Go and Ruby resolve to exact versions at
+build time. The image records these versions, its architecture, mise version,
+install roots, and executable SHA-256 digests in
+`/opt/buildkite/mise-toolchains/manifest.json`.
+
+Toolchains are stored once under `/opt/buildkite/mise-toolchains/installs` and
+linked into mise's `/mise/installs` and `/opt/hostedtoolcache` (`node`, `go`, and
+`Ruby`) for setup actions. Node 24 is the default on `PATH`; the cache is not the
+runner's JavaScript runtime or full GitHub-hosted Ubuntu parity.
+
+Mise is installed at `/usr/local/bin/mise`, not `/mise/bin/mise`, so `jdx/mise-action`
+can install its requested version. Reuse requires `MISE_DATA_DIR=/mise`; the
+images do not configure `buildkite-gha`.
+
+| Tag | Description |
+| - | - |
+| [ubuntu-jammy-hosted-toolchains](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-jammy-hosted-toolchains) | Ubuntu 22.04 LTS Hosted base with preloaded mise toolchains |
+| [ubuntu-noble-hosted-toolchains](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-noble-hosted-toolchains) | Ubuntu 24.04 LTS Hosted base with preloaded mise toolchains |
+
 ### Why Ubuntu codenames?
 
 This makes Dependabot slightly easier to work with. When tagged with version

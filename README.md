@@ -41,44 +41,34 @@ and other common system tools.
 | Tag | Description |
 | - | - |
 | [ubuntu-jammy-hosted](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-jammy-hosted) | Ubuntu 22.04 LTS base for Hosted Agents |
-| [ubuntu-jammy-hosted-toolchains](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-jammy-hosted-toolchains) | Ubuntu 22.04 LTS Hosted base with preloaded mise toolchains |
 | [ubuntu-noble-hosted](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-noble-hosted) | Ubuntu 24.04 LTS base for Hosted Agents |
-| [ubuntu-noble-hosted-toolchains](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-noble-hosted-toolchains) | Ubuntu 24.04 LTS Hosted base with preloaded mise toolchains |
 
-### Preloaded Hosted toolchains
+## Hosted Toolchains Variants
 
-The opt-in `ubuntu-jammy-hosted-toolchains` and
-`ubuntu-noble-hosted-toolchains` variants preload a common toolchain using
-mise. The corresponding Hosted variants without the `-toolchains` suffix
-remain the smaller default images.
-
-The preloaded toolchain contains:
+Hosted toolchain variants preloaded with mise:
 
 - Node.js 22.23.2 and 24.18.0
 - the latest patch release from each supported Go 1.24, 1.25, and 1.26 line
 - the latest stable Ruby for which mise has a precompiled binary
 
-The Node versions are exact pins derived from the same release source used by
-the GitHub runner-image toolsets. The Go and Ruby versions are resolved to
-exact versions during each image build. Each toolchain image records those
-versions, its architecture, the pinned mise version, canonical install roots,
-and executable SHA-256 digests in
-`/opt/buildkite/mise-toolchains/manifest.json`.
+Node pins come from the same release source as the GitHub runner-image
+toolsets; Go and Ruby resolve to exact versions at build time. The image records
+these versions, its architecture, mise version, install roots, and executable
+SHA-256 digests in `/opt/buildkite/mise-toolchains/manifest.json`.
 
-Toolchain bytes live only under `/opt/buildkite/mise-toolchains/installs`.
-Native mise discovers the same installs through links under `/mise/installs`.
-Node 24 at that canonical root is the default `node` on `PATH`. The matching
-`/opt/hostedtoolcache` entries provide the case-sensitive setup-action tool
-cache layout (`node`, `go`, and `Ruby`) without copying the SDKs. This cache is
-not the runner-bundled Node runtime used to execute JavaScript actions. The
-compatibility layout is not a claim of full GitHub-hosted Ubuntu image parity.
+Toolchains are stored once under `/opt/buildkite/mise-toolchains/installs` and
+linked into mise's `/mise/installs` and `/opt/hostedtoolcache` (`node`, `go`, and
+`Ruby`) for setup actions. Node 24 is the default on `PATH`; the cache is not the
+runner's JavaScript runtime or full GitHub-hosted Ubuntu parity.
 
-The toolchain images keep mise itself at `/usr/local/bin/mise`; they do not
-install `/mise/bin/mise`, so `jdx/mise-action` remains free to install its
-requested mise version. Reusing the preloaded toolchains from
-`jdx/mise-action` still requires the workload runtime to preserve
-`MISE_DATA_DIR=/mise`. These images provide the seed and filesystem layout but
-do not configure `buildkite-gha`.
+Mise is installed at `/usr/local/bin/mise`, not `/mise/bin/mise`, so `jdx/mise-action`
+can install its requested version. Reuse requires `MISE_DATA_DIR=/mise`; the
+images do not configure `buildkite-gha`.
+
+| Tag | Description |
+| - | - |
+| [ubuntu-jammy-hosted-toolchains](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-jammy-hosted-toolchains) | Ubuntu 22.04 LTS Hosted base with preloaded mise toolchains |
+| [ubuntu-noble-hosted-toolchains](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-noble-hosted-toolchains) | Ubuntu 24.04 LTS Hosted base with preloaded mise toolchains |
 
 ### Why Ubuntu codenames?
 

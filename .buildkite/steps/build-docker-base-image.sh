@@ -27,20 +27,25 @@ fi
 
 platform="linux/${arch}"
 packaging_dir="${variant}"
+
+# `-toolchains` variants are virtual, so rewrite packaging_dir to their real parents
+if [[ "${variant}" == *-toolchains ]]; then
+    packaging_dir="${variant%-toolchains}" # e.g. ubuntu-jammy-hosted-toolchains → ubuntu-jammy-hosted
+fi
+
 build_context="${packaging_dir}"
 build_args=()
 
+# - Rewrite `build_context` here because these images need access to common/install-mise-toolchains.sh
+# - Rewrite `build_args` here to adapt to new `build_context` and to specify custom --target for `toolchains`
 case "${variant}" in
-    ubuntu-jammy-hosted-toolchains|ubuntu-noble-hosted-toolchains)
-        packaging_dir="${variant%-toolchains}"
-        build_context="."
-        build_args=(--file "${packaging_dir}/Dockerfile" --target toolchains)
-        ;;
     ubuntu-jammy-hosted|ubuntu-noble-hosted)
-        # These Dockerfiles share the toolchain installer from the repository
-        # root, even though their default target remains the slim Hosted image.
         build_context="."
         build_args=(--file "${packaging_dir}/Dockerfile")
+        ;;
+    ubuntu-jammy-hosted-toolchains|ubuntu-noble-hosted-toolchains)
+        build_context="."
+        build_args=(--file "${packaging_dir}/Dockerfile" --target toolchains)
         ;;
 esac
 

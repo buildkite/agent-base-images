@@ -114,9 +114,6 @@ ARG NODE_22_VERSION
 ARG NODE_24_VERSION
 ARG YARN_VERSION
 
-ENV COREPACK_HOME="/opt/buildkite/mise-toolchains/corepack"
-ENV COREPACK_DEFAULT_TO_LATEST="0"
-
 RUN --mount=type=bind,source=common/install-mise-toolchains.sh,target=/tmp/install-mise-toolchains.sh \
   bash /tmp/install-mise-toolchains.sh
 

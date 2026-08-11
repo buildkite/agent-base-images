@@ -123,15 +123,11 @@ canonical_mise trust /tmp/mise-ruby-project/mise.toml
   canonical_mise install --locked
 )
 
-# Node distributes Corepack with both pinned Node lines. Enable its Yarn shims
-# in each install and preload an exact default release into the shared image
-# cache so yarn works without a runtime bootstrap download.
+# Install Yarn into both Node installations.
 for version in "${NODE_22_VERSION}" "${NODE_24_VERSION}"; do
   node_root="${TOOLCHAIN_DATA_DIR}/installs/node/${version}"
-  PATH="${node_root}/bin:${PATH}" corepack enable yarn --install-directory "${node_root}/bin"
+  PATH="${node_root}/bin:${PATH}" npm install --global "yarn@${YARN_VERSION}"
 done
-PATH="${TOOLCHAIN_DATA_DIR}/installs/node/${NODE_24_VERSION}/bin:${PATH}" \
-  corepack install --global "yarn@${YARN_VERSION}"
 
 export RUBY_ARCHIVE="${TOOLCHAIN_DATA_DIR}/downloads/ruby/${RUBY_VERSION}/${RUBY_X64_ASSET}"
 export RUBY_ARCHIVE_SHA256="${RUBY_X64_SHA256#sha256:}"
@@ -188,7 +184,7 @@ for version in "${NODE_22_VERSION}" "${NODE_24_VERSION}"; do
   test -L "${canonical_root}/bin/yarn"
   test -f "$(readlink -f "${canonical_root}/bin/yarn")"
   test "$(PATH="${toolcache_root}/bin:${PATH}" node --version)" = "v${version}"
-  test "$(COREPACK_ENABLE_NETWORK=0 PATH="${toolcache_root}/bin:${PATH}" yarn --version)" = "${YARN_VERSION}"
+  test "$(PATH="${toolcache_root}/bin:${PATH}" yarn --version)" = "${YARN_VERSION}"
 done
 
 export NODE_24_ROOT="${TOOLCHAIN_DATA_DIR}/installs/node/${NODE_24_VERSION}"

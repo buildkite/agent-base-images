@@ -64,14 +64,6 @@ linked into mise's `/mise/installs` and `/opt/hostedtoolcache` (`node`, `go`, an
 `Ruby`) for setup actions. Node 24 is the default on `PATH`; the cache is not the
 runner's JavaScript runtime or full GitHub-hosted Ubuntu parity.
 
-Both preloaded Node versions enable their bundled Corepack Yarn shim and share
-an image-level cache containing the pinned Yarn Classic release, so
-`yarn --version` works without a bootstrap download after either Node version is
-selected. Projects can still select another Yarn release through Corepack's
-standard `packageManager` behavior. A release not already cached needs a
-writable `COREPACK_HOME` (preferably per-user or per-job) and may require network
-access; the image-owned cache is only guaranteed to contain Yarn 1.22.22.
-
 Mise is installed at `/usr/local/bin/mise`, not `/mise/bin/mise`, so `jdx/mise-action`
 can install its requested version. Reuse requires `MISE_DATA_DIR=/mise`; the
 images do not configure `buildkite-gha`.

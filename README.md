@@ -49,6 +49,7 @@ Hosted toolchain variants preloaded with mise:
 
 - two Node.js LTS lines (22 and 24), pinned via the `NODE_22_VERSION` and
   `NODE_24_VERSION` build args in the `-hosted` Dockerfiles
+- Yarn Classic, pinned via the `YARN_VERSION` build arg (currently 1.22.22)
 - the latest patch release from each supported Go 1.24, 1.25, and 1.26 line
 - the latest stable Ruby for which mise has a precompiled binary
 

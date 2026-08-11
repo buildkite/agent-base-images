@@ -31,10 +31,10 @@ steps:
     label: ":pipeline: Upload {{variant}} group (branch)"
 
   - block: ":rocket: Deploy -hosted images to Namespace"
-    branches: "main"
+    # branches: "main"
 
   - trigger: "namespace-base-images-deployment"
     label: ":rocket: Trigger namespace-base-images-deployment"
-    branches: "main"
+    # branches: "main"
     build:
       branch: "main"

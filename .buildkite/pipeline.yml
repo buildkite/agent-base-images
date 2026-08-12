@@ -30,7 +30,7 @@ steps:
     <<: *generate-variant-group
     label: ":pipeline: Upload {{variant}} group (branch)"
 
-  - block: ":rocket: Deploy *-hosted images to Namespace"
+  - wait: ~
     branches: "main"
 
   - trigger: "namespace-base-images-deployment"

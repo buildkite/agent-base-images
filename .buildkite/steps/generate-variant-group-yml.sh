@@ -73,5 +73,8 @@ if [[ "${PUSH_IMAGE:-}" == "true" ]]; then
       - <<: *build-and-publish-variant
         label: ":docker: Publish ${variant} multiarch manifest"
         command: ".buildkite/steps/publish-multiarch-manifest.sh ${variant}"
+        retry:
+          automatic: true
+
 EOF
 fi

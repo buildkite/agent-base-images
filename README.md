@@ -52,16 +52,18 @@ Hosted toolchain variants preloaded with mise:
 - Yarn Classic, pinned via the `YARN_VERSION` build arg (currently 1.22.22)
 - the latest patch release from each supported Go 1.24, 1.25, and 1.26 line
 - the latest stable Ruby for which mise has a precompiled binary
+- the latest Maven 3, also linked to `/usr/local/bin/mvn` (bring your own JDK,
+  e.g. via `actions/setup-java`)
 
 The exact Node versions are the source of truth in the `-hosted` Dockerfiles and
-track the GitHub runner-image toolsets; Go and Ruby resolve to exact versions at
-build time. The image records these versions, its architecture, mise version,
+track the GitHub runner-image toolsets; Go, Ruby, and Maven resolve to exact
+versions at build time. The image records these versions, its architecture, mise version,
 install roots, and executable SHA-256 digests in
 `/opt/buildkite/mise-toolchains/manifest.json`.
 
 Toolchains are stored once under `/opt/buildkite/mise-toolchains/installs` and
-linked into mise's `/mise/installs` and `/opt/hostedtoolcache` (`node`, `go`, and
-`Ruby`) for setup actions. Node 24 is the default on `PATH`; the cache is not the
+linked into mise's `/mise/installs` and `/opt/hostedtoolcache` (`node`, `go`,
+`Ruby`, and `maven`) for setup actions. Node 24 is the default on `PATH`; the cache is not the
 runner's JavaScript runtime or full GitHub-hosted Ubuntu parity.
 
 Mise is installed at `/usr/local/bin/mise`, not `/mise/bin/mise`, so `jdx/mise-action`

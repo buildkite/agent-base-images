@@ -33,6 +33,12 @@ export GO_126_VERSION="$(canonical_mise latest go@1.26)"
 [[ "${GO_125_VERSION}" =~ ^1\.25\.[0-9]+$ ]]
 [[ "${GO_126_VERSION}" =~ ^1\.26\.[0-9]+$ ]]
 
+export MAVEN_VERSION="$(canonical_mise latest maven@3)"
+[[ "${MAVEN_VERSION}" =~ ^3\.[0-9]+\.[0-9]+$ ]]
+
+# The maven archive extracts into a nested apache-maven-<version> directory.
+export MAVEN_HOME_DIR="apache-maven-${MAVEN_VERSION}"
+
 # Resolve the newest stable Ruby with precompiled assets for both Linux
 # architectures. An ephemeral lockfile selects its exact jdx/ruby build
 # revision without relying on the anonymous GitHub API quota.
@@ -116,6 +122,7 @@ canonical_mise install "node@${NODE_24_VERSION}"
 canonical_mise install "go@${GO_124_VERSION}"
 canonical_mise install "go@${GO_125_VERSION}"
 canonical_mise install "go@${GO_126_VERSION}"
+canonical_mise install "maven@${MAVEN_VERSION}"
 canonical_mise trust /tmp/mise-ruby-project/mise.toml
 (
   cd /tmp/mise-ruby-project
@@ -145,24 +152,28 @@ register_tool() {
   local toolcache_tool="$2"
   local version="$3"
   local executable="$4"
+  local subdir="${5:-}"
   local canonical_root="${TOOLCHAIN_DATA_DIR}/installs/${mise_tool}/${version}"
+  local content_root="${canonical_root}${subdir:+/${subdir}}"
   local mise_root="/mise/installs/${mise_tool}/${version}"
   local toolcache_version_root="/opt/hostedtoolcache/${toolcache_tool}/${version}"
   local toolcache_root="${toolcache_version_root}/${TOOLCACHE_ARCH}"
 
   test -d "${canonical_root}"
   test ! -L "${canonical_root}"
-  test -f "${canonical_root}/${executable}"
-  test ! -L "${canonical_root}/${executable}"
+  test -d "${content_root}"
+  test ! -L "${content_root}"
+  test -f "${content_root}/${executable}"
+  test ! -L "${content_root}/${executable}"
 
-  mise link "${mise_tool}@${version}" "${canonical_root}"
+  mise link "${mise_tool}@${version}" "${content_root}"
   test -L "${mise_root}"
-  test "$(readlink -f "${mise_root}")" = "${canonical_root}"
+  test "$(readlink -f "${mise_root}")" = "${content_root}"
 
   mkdir -p "${toolcache_version_root}"
-  ln -s "${canonical_root}" "${toolcache_root}"
+  ln -s "${content_root}" "${toolcache_root}"
   test -L "${toolcache_root}"
-  test "$(readlink -f "${toolcache_root}")" = "${canonical_root}"
+  test "$(readlink -f "${toolcache_root}")" = "${content_root}"
 }
 
 register_tool node node "${NODE_22_VERSION}" bin/node
@@ -171,6 +182,14 @@ register_tool go go "${GO_124_VERSION}" bin/go
 register_tool go go "${GO_125_VERSION}" bin/go
 register_tool go go "${GO_126_VERSION}" bin/go
 register_tool ruby Ruby "${RUBY_VERSION}" bin/ruby
+register_tool maven maven "${MAVEN_VERSION}" bin/mvn "${MAVEN_HOME_DIR}"
+
+export MAVEN_ROOT="${TOOLCHAIN_DATA_DIR}/installs/maven/${MAVEN_VERSION}/${MAVEN_HOME_DIR}"
+
+# GitHub runner images expose mvn directly on PATH.
+ln -s "${MAVEN_ROOT}/bin/mvn" /usr/local/bin/mvn
+test -L /usr/local/bin/mvn
+test "$(readlink -f /usr/local/bin/mvn)" = "${MAVEN_ROOT}/bin/mvn"
 
 test ! -e /mise/bin/mise
 
@@ -238,6 +257,32 @@ mise exec "ruby@${RUBY_VERSION}" -- ruby -I. -rmise_image_smoke -e \
   'abort unless MiseImageSmoke.ok?'
 popd
 
+# Maven needs a JDK at runtime; workflows bring their own (e.g. via
+# actions/setup-java), so install a throwaway one only to smoke test mvn.
+smoke_mise() {
+  MISE_DATA_DIR=/tmp/mise-smoke-data \
+    MISE_CONFIG_DIR=/tmp/mise-config \
+    MISE_CACHE_DIR=/tmp/mise-cache \
+    mise "$@"
+}
+
+SMOKE_JDK_VERSION="$(smoke_mise latest java@temurin-21)"
+[[ "${SMOKE_JDK_VERSION}" == temurin-21.* ]]
+smoke_mise install "java@${SMOKE_JDK_VERSION}"
+export SMOKE_JAVA_HOME="$(smoke_mise where "java@${SMOKE_JDK_VERSION}")"
+test -f "${SMOKE_JAVA_HOME}/bin/java"
+
+maven_reported_version() {
+  JAVA_HOME="${SMOKE_JAVA_HOME}" "$1" --version | head -n1 | awk '{print $3}'
+}
+
+test "$(readlink -f "$(mise where "maven@${MAVEN_VERSION}")")" = "${MAVEN_ROOT}"
+test "$(mise which mvn --tool "maven@${MAVEN_VERSION}")" = "/mise/installs/maven/${MAVEN_VERSION}/bin/mvn"
+test "$(JAVA_HOME="${SMOKE_JAVA_HOME}" mise exec "maven@${MAVEN_VERSION}" -- mvn --version | head -n1 | awk '{print $3}')" = "${MAVEN_VERSION}"
+test "$(maven_reported_version "${MAVEN_ROOT}/bin/mvn")" = "${MAVEN_VERSION}"
+test "$(maven_reported_version "/opt/hostedtoolcache/maven/${MAVEN_VERSION}/${TOOLCACHE_ARCH}/bin/mvn")" = "${MAVEN_VERSION}"
+test "$(maven_reported_version /usr/local/bin/mvn)" = "${MAVEN_VERSION}"
+
 jq -n \
   --arg architecture "${DEBIAN_ARCH}" \
   --arg toolcache_architecture "${TOOLCACHE_ARCH}" \
@@ -251,6 +296,8 @@ jq -n \
   --arg go126 "${GO_126_VERSION}" \
   --arg ruby "${RUBY_VERSION}" \
   --arg ruby_source_release "${RUBY_SOURCE_RELEASE}" \
+  --arg maven "${MAVEN_VERSION}" \
+  --arg maven_home "${MAVEN_HOME_DIR}" \
   'def tool($name; $version; $executable): {
     tool: $name,
     version: $version,
@@ -273,7 +320,8 @@ jq -n \
       tool("go"; $go124; "bin/go"),
       tool("go"; $go125; "bin/go"),
       tool("go"; $go126; "bin/go"),
-      (tool("ruby"; $ruby; "bin/ruby") + {source_release: $ruby_source_release})
+      (tool("ruby"; $ruby; "bin/ruby") + {source_release: $ruby_source_release}),
+      tool("maven"; $maven; $maven_home + "/bin/mvn")
     ]
   }' \
   < <(
@@ -283,7 +331,8 @@ jq -n \
       "${TOOLCHAIN_DATA_DIR}/installs/go/${GO_124_VERSION}/bin/go" \
       "${TOOLCHAIN_DATA_DIR}/installs/go/${GO_125_VERSION}/bin/go" \
       "${TOOLCHAIN_DATA_DIR}/installs/go/${GO_126_VERSION}/bin/go" \
-      "${TOOLCHAIN_DATA_DIR}/installs/ruby/${RUBY_VERSION}/bin/ruby" |
+      "${TOOLCHAIN_DATA_DIR}/installs/ruby/${RUBY_VERSION}/bin/ruby" \
+      "${MAVEN_ROOT}/bin/mvn" |
       awk '{print "\"" $1 "\""}'
   ) >"${TOOLCHAIN_DATA_DIR}/manifest.json"
 
@@ -298,6 +347,7 @@ while IFS=$'\t' read -r tool version canonical_root executable executable_sha256
     node) reported_version="$("${executable}" --version)"; reported_version="${reported_version#v}" ;;
     go) reported_version="$("${executable}" env GOVERSION)"; reported_version="${reported_version#go}" ;;
     ruby) reported_version="$("${executable}" -e 'print RUBY_VERSION')" ;;
+    maven) reported_version="$(maven_reported_version "${executable}")" ;;
   esac
   test "${reported_version}" = "${version}"
 done < <(jq -r '.toolchains[] | [.tool, .version, .canonical_root, .executable, .executable_sha256] | @tsv' "${TOOLCHAIN_DATA_DIR}/manifest.json")
@@ -318,9 +368,10 @@ mark_complete go "${GO_124_VERSION}"
 mark_complete go "${GO_125_VERSION}"
 mark_complete go "${GO_126_VERSION}"
 mark_complete Ruby "${RUBY_VERSION}"
+mark_complete maven "${MAVEN_VERSION}"
 
 rm -rf /mise/cache /tmp/mise-cache /tmp/mise-config \
   /tmp/mise-go-build-cache /tmp/mise-go-smoke.go \
   /tmp/mise-ruby-native-extension /tmp/mise-ruby-project \
   /tmp/mise-ruby-release.json /tmp/node-compile-cache \
-  /tmp/mise-ruby-candidate-release.json
+  /tmp/mise-ruby-candidate-release.json /tmp/mise-smoke-data

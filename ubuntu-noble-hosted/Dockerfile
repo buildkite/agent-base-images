@@ -120,6 +120,9 @@ ARG YARN_VERSION
 RUN --mount=type=bind,source=common/install-mise-toolchains.sh,target=/tmp/install-mise-toolchains.sh \
   bash /tmp/install-mise-toolchains.sh
 
+RUN --mount=type=bind,source=common/install-docker.sh,target=/tmp/install-docker.sh \
+  bash /tmp/install-docker.sh
+
 WORKDIR /root
 USER root
 

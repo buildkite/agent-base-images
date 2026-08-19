@@ -54,6 +54,9 @@ Hosted toolchain variants preloaded with mise:
 - the latest stable Ruby for which mise has a precompiled binary
 - the latest Maven 3, also linked to `/usr/local/bin/mvn` (bring your own JDK,
   e.g. via `actions/setup-java`)
+- Docker Engine from Docker's apt repository, with the buildx and compose CLI
+  plugins (`docker compose`, no standalone `docker-compose`, matching GitHub
+  runner images); the daemon is not started or configured in the image
 
 The exact Node versions are the source of truth in the `-hosted` Dockerfiles and
 track the GitHub runner-image toolsets; Go, Ruby, and Maven resolve to exact

@@ -57,6 +57,9 @@ Hosted toolchain variants preloaded with mise:
 - Docker Engine from Docker's apt repository, with the buildx and compose CLI
   plugins (`docker compose`, no standalone `docker-compose`, matching GitHub
   runner images); the daemon is not started or configured in the image
+- the Noble variant also includes a focused GitHub Actions compatibility set:
+  Clang, CMake, Ninja, GNU Fortran, common native-build headers, archive tools,
+  and system and network utilities frequently assumed by workflows
 
 The exact Node versions are the source of truth in the `-hosted` Dockerfiles and
 track the GitHub runner-image toolsets; Go, Ruby, and Maven resolve to exact

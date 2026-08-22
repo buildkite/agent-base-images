@@ -115,6 +115,7 @@ FROM base AS toolchains
 ARG MISE_VERSION
 ARG NODE_22_VERSION
 ARG NODE_24_VERSION
+ARG TARGETARCH
 ARG YARN_VERSION
 
 RUN --mount=type=bind,source=common/install-mise-toolchains.sh,target=/tmp/install-mise-toolchains.sh \
@@ -122,6 +123,70 @@ RUN --mount=type=bind,source=common/install-mise-toolchains.sh,target=/tmp/insta
 
 RUN --mount=type=bind,source=common/install-docker.sh,target=/tmp/install-docker.sh \
   bash /tmp/install-docker.sh
+
+# Common build and system tools available on GitHub-hosted Ubuntu runners.
+# Keep this as the final toolchains layer so its image-size cost is visible.
+RUN --mount=type=cache,target=/var/cache/apt,id=gha-compat-apt-cache-${TARGETARCH},sharing=locked \
+--mount=type=cache,target=/var/lib/apt,id=gha-compat-apt-lib-${TARGETARCH},sharing=locked \
+<<BASH
+#!/usr/bin/env bash
+
+set -eufo pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get update
+apt-get install -y --no-install-recommends \
+  autoconf \
+  automake \
+  bison \
+  bzip2 \
+  clang \
+  clang-format \
+  clang-tidy \
+  cmake \
+  dnsutils \
+  file \
+  flex \
+  gfortran \
+  gzip \
+  iproute2 \
+  iputils-ping \
+  libbz2-dev \
+  libffi-dev \
+  libicu-dev \
+  liblz4-dev \
+  liblzma-dev \
+  libreadline-dev \
+  libsqlite3-dev \
+  libssl-dev \
+  libtool \
+  libyaml-dev \
+  lld \
+  locales \
+  net-tools \
+  netcat-openbsd \
+  ninja-build \
+  p7zip-full \
+  patchelf \
+  pigz \
+  pkg-config \
+  procps \
+  python-is-python3 \
+  python3-venv \
+  shellcheck \
+  swig \
+  tar \
+  time \
+  tree \
+  tzdata \
+  wget \
+  xz-utils \
+  zlib1g-dev \
+  zstd
+
+apt clean all
+BASH
 
 WORKDIR /root
 USER root

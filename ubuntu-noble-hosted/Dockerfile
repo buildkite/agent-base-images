@@ -142,43 +142,26 @@ apt-get install -y --no-install-recommends \
   bison \
   bzip2 \
   clang \
-  clang-format \
-  clang-tidy \
   cmake \
-  dnsutils \
   file \
   flex \
-  gfortran \
   gzip \
   iproute2 \
-  iputils-ping \
   libbz2-dev \
   libffi-dev \
-  libicu-dev \
-  liblz4-dev \
+  libicu74 \
   liblzma-dev \
   libreadline-dev \
   libsqlite3-dev \
   libssl-dev \
   libtool \
   libyaml-dev \
-  lld \
-  locales \
-  net-tools \
-  netcat-openbsd \
   ninja-build \
-  p7zip-full \
-  patchelf \
-  pigz \
   pkg-config \
   procps \
   python-is-python3 \
   python3-venv \
-  shellcheck \
-  swig \
   tar \
-  time \
-  tree \
   tzdata \
   wget \
   xz-utils \

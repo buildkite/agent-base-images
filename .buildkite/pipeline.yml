@@ -38,3 +38,7 @@ steps:
     branches: "main"
     build:
       branch: "main"
+
+notify:
+  - slack: "#feed-agents-blerts"
+    if: build.state == "failed" && build.branch == "main"

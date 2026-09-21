@@ -92,12 +92,10 @@ rm -rf /tmp/awscliv2.zip /opt/aws
 aws --version
 
 # install GCP CLI
-#
-# with workaround for arm64 https://issuetracker.google.com/issues/383568269
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
 echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
 apt-get update
-apt-get install -y google-cloud-cli=502.0.0-0
+apt-get install -y google-cloud-cli
 gcloud --version
 
 rm -rf /tmp/*

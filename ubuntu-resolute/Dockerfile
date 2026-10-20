@@ -42,6 +42,14 @@ install_main_pkgs() {
 }
 (r=3; while ! install_main_pkgs; do ((--r)) || exit; done)
 
+# Distrust roots chaining to compromised eMudhra intermediates.
+# https://emudhra.we-have-a-problem.com/
+sed -i \
+    -e 's|^mozilla/emSign_ECC_Root_CA_-_G3.crt|!&|' \
+    -e 's|^mozilla/Comodo_AAA_Services_root.crt|!&|' \
+    /etc/ca-certificates.conf
+update-ca-certificates
+
 # Install Docker Engine
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc

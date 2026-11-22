@@ -35,8 +35,13 @@ Contains Docker tooling and other common system tools.
 
 Base Images for [Buildkite Linux Hosted Agents](https://buildkite.com/docs/agent/buildkite-hosted).
 
-Contains python3, node, mise, buildkite-cli, aws-cli, google-cloud-cli, 
+Contains python3, node, mise, buildkite-cli, cloudsmith-cli, aws-cli, google-cloud-cli,
 and other common system tools.
+
+The Cloudsmith CLI is installed from GitHub releases using mise's `github`
+backend, pinned via the `CLOUDSMITH_CLI_VERSION` build arg in each hosted
+Dockerfile, and available as `cloudsmith` on `PATH` without mise activation.
+It is also included in the hosted toolchains variants.
 
 | Tag | Description |
 | - | - |

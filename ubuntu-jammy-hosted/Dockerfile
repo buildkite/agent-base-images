@@ -9,6 +9,7 @@ FROM public.ecr.aws/ubuntu/ubuntu:22.04 AS base
 
 ARG BAZELISK_VERSION=v1.29.0
 ARG BK_CLI_VERSION=3.40.0
+ARG CLOUDSMITH_CLI_VERSION=1.31.3
 ARG MISE_VERSION
 ARG NODE_24_VERSION
 ARG MISE_SHA256_AMD64=66585ac496c10bf6fbf13272e3e550c1813aed0e1cb780b9bb73c1751de49289
@@ -91,6 +92,11 @@ dpkg -i /tmp/bk.deb
 rm -f /tmp/bk.deb
 
 bash /install-mise-default-node.sh
+
+# Install the standalone Cloudsmith CLI without changing system Python.
+mise install-into "github:cloudsmith-io/cloudsmith-cli@${CLOUDSMITH_CLI_VERSION}" /opt/cloudsmith-cli
+ln -s /opt/cloudsmith-cli/cloudsmith /usr/local/bin/cloudsmith
+cloudsmith --version
 
 # install aws-cli
 curl https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip -o /tmp/awscliv2.zip

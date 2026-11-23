@@ -43,7 +43,7 @@ case "${variant}" in
         build_context="."
         build_args=(--file "${packaging_dir}/Dockerfile")
         ;;
-    ubuntu-jammy-hosted-toolchains|ubuntu-noble-hosted-toolchains)
+    ubuntu-jammy-hosted-toolchains|ubuntu-noble-hosted-toolchains|ubuntu-resolute-hosted-toolchains)
         build_context="."
         build_args=(--file "${packaging_dir}/Dockerfile" --target toolchains)
         ;;

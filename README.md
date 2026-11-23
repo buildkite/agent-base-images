@@ -62,9 +62,9 @@ Hosted toolchain variants preloaded with mise:
 - Docker Engine from Docker's apt repository, with the buildx and compose CLI
   plugins (`docker compose`, no standalone `docker-compose`, matching GitHub
   runner images); the daemon is not started or configured in the image
-- the Noble variant also includes a focused GitHub Actions compatibility set:
-  Clang, CMake, Ninja, common native-build headers, archive tools, and system
-  utilities frequently assumed by workflows
+- the Noble and Resolute variants also include a focused GitHub Actions
+  compatibility set: Clang, CMake, Ninja, common native-build headers, archive
+  tools, and system utilities frequently assumed by workflows
 
 The exact Node versions are the source of truth in the `-hosted` Dockerfiles and
 track the GitHub runner-image toolsets; Go, Ruby, and Maven resolve to exact
@@ -85,6 +85,7 @@ images do not configure `buildkite-gha`.
 | - | - |
 | [ubuntu-jammy-hosted-toolchains](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-jammy-hosted-toolchains) | Ubuntu 22.04 LTS Hosted base with preloaded mise toolchains |
 | [ubuntu-noble-hosted-toolchains](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-noble-hosted-toolchains) | Ubuntu 24.04 LTS Hosted base with preloaded mise toolchains |
+| [ubuntu-resolute-hosted-toolchains](https://hub.docker.com/layers/buildkite/agent-base/ubuntu-resolute-hosted-toolchains) | Ubuntu 26.04 LTS Hosted base with preloaded mise toolchains and Git 2.53 from Ubuntu's package archive |
 
 ### Why Ubuntu codenames?
 

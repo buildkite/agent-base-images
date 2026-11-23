@@ -18,6 +18,7 @@ anchor_1: &generate-variant-group
       - "ubuntu-noble-hosted"
       - "ubuntu-noble-hosted-toolchains"
       - "ubuntu-resolute"
+      - "ubuntu-resolute-hosted-toolchains"
 
 steps:
   - branches: "main"
